@@ -81,10 +81,7 @@ class AndroidRenameSteps {
     print('Updating MainActivity.$extension');
     await replaceInFileRegex(
         path.path, r'^(package (?:\.|\w)+)', "package ${newPackageName}");
-    await replaceInFileRegex(
-        path.path,
-        r'^(MapKitFactory\.setApiKey\("[^"]*"\)',
-        "MapKitFactory.setApiKey('$yaKey')");
+    await replaceInFileString(path.path, "YANDEX_KEY", yaKey);
 
     String newPackagePath = newPackageName.replaceAll('.', '/');
     String newPath = '${PATH_ACTIVITY}${type}/$newPackagePath';

@@ -20,6 +20,16 @@ Future<void> replaceInFileRegex(String path, regex, replacement) async {
   await writeFileFromString(path, contents);
 }
 
+Future<void> replaceInFileString(String path, replace, replacement) async {
+  String? contents = await readFileAsString(path);
+  if(contents == null){
+    print('ERROR:: file at $path not found');
+    return;
+  }
+  contents = contents.replaceAll(replace, replacement);
+  await writeFileFromString(path, contents);
+}
+
 Future<String?> readFileAsString(String path) async {
   var file = File(path);
   String? contents;

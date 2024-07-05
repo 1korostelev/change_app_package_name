@@ -5,29 +5,39 @@ import './file_utils.dart';
 
 class AndroidRenameSteps {
   final String newPackageName;
+  final String yaKey;
   String? oldPackageName;
 
   static const String PATH_BUILD_GRADLE = 'android/app/build.gradle';
-  static const String PATH_MANIFEST = 'android/app/src/main/AndroidManifest.xml';
-  static const String PATH_MANIFEST_DEBUG = 'android/app/src/debug/AndroidManifest.xml';
-  static const String PATH_MANIFEST_PROFILE = 'android/app/src/profile/AndroidManifest.xml';
+  static const String PATH_MANIFEST =
+      'android/app/src/main/AndroidManifest.xml';
+  static const String PATH_MANIFEST_DEBUG =
+      'android/app/src/debug/AndroidManifest.xml';
+  static const String PATH_MANIFEST_PROFILE =
+      'android/app/src/profile/AndroidManifest.xml';
 
   static const String PATH_ACTIVITY = 'android/app/src/main/';
 
-  AndroidRenameSteps(this.newPackageName);
+  AndroidRenameSteps({
+    required this.newPackageName,
+    required this.yaKey,
+  });
 
   Future<void> process() async {
     if (!await File(PATH_BUILD_GRADLE).exists()) {
-      print('ERROR:: build.gradle file not found, Check if you have a correct android directory present in your project'
+      print(
+          'ERROR:: build.gradle file not found, Check if you have a correct android directory present in your project'
           '\n\nrun " flutter create . " to regenerate missing files.');
       return;
     }
     String? contents = await readFileAsString(PATH_BUILD_GRADLE);
 
-    var reg = RegExp(r'applicationId\s*=?\s*"(.*)"', caseSensitive: true, multiLine: false);
+    var reg = RegExp(r'applicationId\s*=?\s*"(.*)"',
+        caseSensitive: true, multiLine: false);
     var match = reg.firstMatch(contents!);
-    if(match == null) {
-      print('ERROR:: applicationId not found in build.gradle file, Please file an issue on github with $PATH_BUILD_GRADLE file attached.');
+    if (match == null) {
+      print(
+          'ERROR:: applicationId not found in build.gradle file, Please file an issue on github with $PATH_BUILD_GRADLE file attached.');
       return;
     }
     var name = match.group(1);
@@ -71,6 +81,10 @@ class AndroidRenameSteps {
     print('Updating MainActivity.$extension');
     await replaceInFileRegex(
         path.path, r'^(package (?:\.|\w)+)', "package ${newPackageName}");
+    await replaceInFileRegex(
+        path.path,
+        r'^(MapKitFactory\.setApiKey\("[^"]*"\)',
+        "MapKitFactory.setApiKey('$yaKey')");
 
     String newPackagePath = newPackageName.replaceAll('.', '/');
     String newPath = '${PATH_ACTIVITY}${type}/$newPackagePath';
@@ -114,7 +128,7 @@ class AndroidRenameSteps {
   }
 
   Future<List<FileSystemEntity>> dirContents(Directory dir) {
-    if(!dir.existsSync()) return Future.value([]);
+    if (!dir.existsSync()) return Future.value([]);
     var files = <FileSystemEntity>[];
     var completer = Completer<List<FileSystemEntity>>();
     var lister = dir.list(recursive: true);
